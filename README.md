@@ -1,3 +1,17 @@
+## How to Use
+```
+cd model_app/
+python manage.py runserver
+```
+Go to this url in browser:
+```
+http://127.0.0.1:8000/model_start/
+```
+Start Modus:
+```
+cd hackathon-app/
+modus dev
+```
 ## Inspiration
 Diseases have a way of emerging and disrupting lives whenever they get the opportunity. In 1919, the Spanish Flu caused a devastating pandemic, and a century later, in 2019, the world faced another global crisis as COVID-19 led to lockdowns, shuttered businesses, and widespread impact on daily life.<br>
 Now, with the rise of HMPV (Human Metapneumovirus), we have developed a model that leverages existing knowledge bases, such as the Drug Target Ontology. This model identifies relationships between diseases by analyzing their semantic and structural connections, enabling it to uncover patterns and propagate insights effectively.
