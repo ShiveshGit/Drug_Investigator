@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>This is a test web app</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to bottom right, #f0f4f8, #d9e2ec);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        #box {
+            max-width: 600px;
+            margin: 50px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        #innerBox {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: #00539f;
+            margin-bottom: 20px;
+        }
+
+        form {
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #00539f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+        }
+
+        button:hover {
+            background-color: #003f7f;
+            transform: scale(1.05);
+        }
+
+        #response,#optimalResponse {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #333333dd; /* Slightly transparent */
+        }
+
+        pre {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #00539f33; /* Subtle accent */
+            overflow-x: auto; /* Handle long text gracefully */
+        }
+    </style>
+</head>
+<body>
+    <div id="box">
+        <div id="innerBox"> 
+            <h2>Enter GraphQL Query Parameters</h2>
+                <form id="graphql-form">
+                    <label for="head">Head URL:</label>
+                    <input type="text" id="head" name="head" placeholder="Enter head URL" required><br><br>
+
+                    <label for="relation">Relation:</label>
+                    <input type="text" id="relation" name="relation" placeholder="Enter relation" required><br><br>
+                    <button type="submit">Submit</button>
+                </form>
+                <div id="optimalResponse">
+                    <h3>Optimal Response:</h3>
+                    <pre id="optimal-response-data"></pre>
+                </div>
+                <div id="response">
+                    <h3>Response:</h3>
+                    <pre id="response-data"></pre>
+                </div>
+                
+            </div>
+        </div>
+    <script>
+    // Function to fetch model request data
+    async function fetchModelRequestFunc(variables) {
+        const query = `query ModelRequestFunc($head: String!, $relation: String!) {
+          modelRequestFunc(head: $head, relation: $relation) {
+              tail_id
+              score
+              tail_label
+          }
+        }`;
+      
+        const response = await fetch('http://localhost:8686/graphql', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query,
+            variables,
+          }),
+        });
+        const result = await response.json();
+        return result.data.modelRequestFunc;
+    }
+    async function fetchNeo4jOptimalResponse(variables)
+    {
+        const query = `query PossibleTailsFunc($tails: [PossibleTailsInput!]!) {
+                        possibleTailsFunc(tails: $tails)
+                    }`;
+        const response = await fetch('http://localhost:8686/graphql', {
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json',
+            },
+            body:JSON.stringify({
+                query,
+                variables,
+            }),
+        });
+        const result = await response.json();
+        return result.data.possibleTailsFunc;
+    }
+
+    // Form submission handler
+    document.getElementById('graphql-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        // Get input values from the form
+        const head = document.getElementById('head').value;
+        const relation = document.getElementById('relation').value;
+
+        try {
+            // Fetch the response from the GraphQL API
+            const result = await fetchModelRequestFunc({
+                head: head,
+                relation: relation,
+            });
+
+            lst = []
+            for(let i=0;i<result.length;i++)
+            {
+                lst.push({"subject":head,"predicate":relation,"tail_label":result[i].tail_label})
+            }
+            console.log(lst)
+            const result_optimal = await fetchNeo4jOptimalResponse({
+                tails:lst         
+            })
+            // Display the response
+            document.getElementById('response-data').textContent = JSON.stringify(result, null, 2);
+            // Display the optimal response
+            document.getElementById("optimal-response-data").textContent = JSON.stringify(result_optimal,null,2);
+        
+        } catch (error) {
+            console.error('Error fetching model request:', error);
+        }
+    });
+    </script>
+</body>
+</html>

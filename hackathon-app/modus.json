@@ -1,0 +1,28 @@
+{
+    "$schema": "https://schema.hypermode.com/modus.json",
+    "endpoints": {
+      "default": {
+        "type": "graphql",
+        "path": "/graphql",
+        "auth": "bearer-token"
+      }
+    }
+    ,
+    "connections":{
+      "zenquotes":{
+        "type":"http",
+        "baseUrl":"https://zenquotes.io/"
+      },
+      "model":{
+        "type":"http",
+        "baseUrl":"http://127.0.0.1:8000/"
+      },
+      "neo4j":{
+       "type":"neo4j",
+       "dbUri": "bolt://localhost:7687",
+       "username":"neo4j",
+       "password":"12345678"
+     }
+   
+    }
+}
